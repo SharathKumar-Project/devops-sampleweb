@@ -35,7 +35,7 @@ pipeline {
             }
         }
 
-        stage('Download and Deploy WAR Locally') {
+       stage('Download and Deploy WAR Locally') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'jfrog_pass', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
                     script {
@@ -47,13 +47,13 @@ pipeline {
                         curl -u $ART_USER:$ART_PASS -O "${artifactUrl}"
 
                         echo "Stopping Tomcat"
-                        sudo systemctl stop tomcat
+                        /opt/tomcat/bin/shutdown.sh || echo 'Tomcat may already be stopped'
 
-                        echo "Copying WAR to Tomcat webapps directory"
-                        sudo cp "${warName}" /opt/tomcat/webapps/
+                        echo "Copying WAR to Tomcat webapps"
+                        cp "${warName}" /opt/tomcat/webapps/
 
                         echo "Starting Tomcat"
-                        sudo systemctl start tomcat
+                         /opt/tomcat/bin/startup.sh
                         """
                     }
                 }
