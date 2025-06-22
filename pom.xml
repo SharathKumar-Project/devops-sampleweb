@@ -43,18 +43,14 @@
         </dependency>
     </dependencies>
 
-<distributionManagement>
-    <repository>
-        <id>lib-release-local</id>
-        <url>http://34.205.147.168:8081/artifactory/lib-release-local</url>
-    </repository>
-    <snapshotRepository>
-        <id>lib-snapshot-local</id>
-        <url>http://34.205.147.168:8081/artifactory/lib-snapshot-local</url>
-    </snapshotRepository>
-</distributionManagement>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>sample-webapp</name>
+            <url>http://34.205.147.168:8081/artifactory/libs-snapshot</url>
+        </snapshotRepository>
+    </distributionManagement>
 
-         
     <build>
         <finalName>sample-webapp</finalName>
         <plugins>
