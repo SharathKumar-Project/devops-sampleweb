@@ -1,0 +1,53 @@
+pipeline {
+    agent { label 'Student_app_worker_node' }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/SharathKumar-Project/devops-sampleweb.git',
+                        credentialsId: 'github_token' // ensure this matches Jenkins credentials ID
+                    ]]
+                ])
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh '''mvn clean install'''
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+        stage('Deploy to Artifactory') {
+            steps {
+                configFileProvider([configFile(fileId: '7f0fd01b-4c09-4e58-9e4e-039ffb81f61d', variable: 'MAVEN_SETTINGS')]) {
+                    sh 'mvn deploy -s $MAVEN_SETTINGS'
+                }
+            }
+        }
+        stage ('Deploy war to tomcat') {
+            steps {
+                sh '''
+                echo "deployed war file to tomcat"
+                 '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
+}
