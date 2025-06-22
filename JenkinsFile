@@ -47,13 +47,13 @@ pipeline {
                         curl -u $ART_USER:$ART_PASS -O "${artifactUrl}"
 
                         echo "Stopping Tomcat"
-                        /opt/tomcat/bin/shutdown.sh || echo 'Tomcat may already be stopped'
+                        /usr/tomcat/tomcat10/bin/shutdown.sh || echo 'Tomcat may already be stopped'
 
                         echo "Copying WAR to Tomcat webapps"
-                        cp "${warName}" /opt/tomcat/webapps/
+                        cp "${warName}" /usr/tomcat/tomcat10/webapps/
 
                         echo "Starting Tomcat"
-                         /opt/tomcat/bin/startup.sh
+                        /usr/tomcat/tomcat10/bin/startup.sh
                         """
                     }
                 }
