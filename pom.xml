@@ -54,8 +54,6 @@
   </snapshotRepository>
 </distributionManagement>
 
-
-
     <build>
         <finalName>sample-webapp</finalName>
         <plugins>
