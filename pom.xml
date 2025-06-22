@@ -43,9 +43,9 @@
         </dependency>
     </dependencies>
 
-   <distributionManagement>
+  <distributionManagement>
     <snapshotRepository>
-        <id>snapshots</id>
+        <id>libs-snapshot-local</id> <!-- must match settings.xml -->
         <name>ip-172-31-90-154-snapshots</name>
         <url>http://34.205.147.168:8081/artifactory/libs-snapshot-local</url>
     </snapshotRepository>
