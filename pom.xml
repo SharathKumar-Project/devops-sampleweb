@@ -43,13 +43,18 @@
         </dependency>
     </dependencies>
 
-  <distributionManagement>
-    <snapshotRepository>
-        <id>libs-snapshot-local</id> <!-- must match settings.xml -->
-        <name>ip-172-31-90-154-snapshots</name>
-        <url>http://34.205.147.168:8081/artifactory/libs-snapshot-local</url>
-    </snapshotRepository>
+ 	<distributionManagement>
+  <repository>
+    <id>libs-release-local</id>
+    <url>http://34.205.147.168:8081/artifactory/libs-release-local</url>
+  </repository>
+
+  <snapshotRepository>
+    <id>libs-snapshot-local</id> <!-- Must match settings.xml -->
+    <url>http://34.205.147.168:8081/artifactory/libs-snapshot-local</url>
+  </snapshotRepository>
 </distributionManagement>
+
 
     <build>
         <finalName>sample-webapp</finalName>
