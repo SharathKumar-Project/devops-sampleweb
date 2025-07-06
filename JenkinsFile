@@ -36,9 +36,48 @@ pipeline {
             }
         }
 
-        stage ('Download and Deploy war to tomcat locally'){
+        stage('Download Latest SNAPSHOT WAR and Deploy') {
             steps {
-                echo 'downloading war from Artifact and checking if tomact is reunning if yes stoping....and copying war to tomcat server...!'
+                withCredentials([usernamePassword(credentialsId: 'jfrog_pass', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
+                    script {
+                        def baseUrl = "http://54.210.232.105:8081/artifactory/libs-snapshot-local"
+                        def groupPath = "com/example/sample-webapp"
+                        def artifactId = "sample-webapp"
+                        def version = "1.2-SNAPSHOT"
+
+                        def metadataUrl = "${baseUrl}/${groupPath}/${version}/maven-metadata.xml"
+
+                        sh """
+                            echo "Fetching Maven metadata..."
+                            curl -u $ART_USER:$ART_PASS -s ${metadataUrl} -o metadata.xml
+
+                            echo "Parsing metadata to find latest WAR..."
+                            TIMESTAMP=\$(grep -oPm1 '(?<=<timestamp>)[^<]+' metadata.xml)
+                            BUILDNUM=\$(grep -oPm1 '(?<=<buildNumber>)[^<]+' metadata.xml)
+
+                            echo "Resolved SNAPSHOT timestamp: \$TIMESTAMP"
+                            echo "Resolved build number: \$BUILDNUM"
+
+                            WAR_NAME=${artifactId}-1.2-\${TIMESTAMP}-\${BUILDNUM}.war
+                            echo "Resolved WAR file: \$WAR_NAME"
+
+                            ARTIFACT_URL=${baseUrl}/${groupPath}/${version}/\$WAR_NAME
+                            echo "Final download URL: \$ARTIFACT_URL"
+
+                            echo "Downloading WAR..."
+                            curl -u $ART_USER:$ART_PASS -o /tmp/\$WAR_NAME \$ARTIFACT_URL
+
+                            echo "Stopping Tomcat..."
+                            /usr/tomcat/tomcat10/bin/shutdown.sh || echo 'Already stopped'
+
+                            echo "Deploying WAR to Tomcat..."
+                            cp /tmp/\$WAR_NAME /usr/tomcat/tomcat10/webapps/sample-webapp.war
+
+                            echo "Starting Tomcat..."
+                            /usr/tomcat/tomcat10/bin/startup.sh
+                        """
+                    }
+                }
             }
         }
     }
