@@ -38,7 +38,7 @@ pipeline {
 
         stage ('Download and Deploy war to tomcat locally'){
             steps {
-                echo 'downloading war from Artifact and checking if tomact is reunning if yes stoping....and copying war to tomcat server....restart tomcat service'
+                echo 'downloading war from Artifact and checking if tomact is reunning if yes stoping....and copying war to tomcat server...!'
             }
         }
     }
