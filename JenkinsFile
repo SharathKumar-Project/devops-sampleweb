@@ -36,53 +36,56 @@ pipeline {
             }
         }
 
-       stage('Download Latest SNAPSHOT WAR and Deploy') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'jfrog_pass', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
-                    script {
-                        def baseUrl = "http://3.86.84.96:8081/artifactory/libs-snapshot-local"
-                        def groupPath = "com/example/sample-webapp"
-                        def artifactId = "sample-webapp"
-                        def version = "1.2-SNAPSHOT"
+      stage('Download Latest SNAPSHOT WAR and Deploy') {
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'jfrog_pass', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
+            script {
+                def baseUrl = "http://3.86.84.96:8081/artifactory/libs-snapshot-local"
+                def groupPath = "com/example/sample-webapp"
+                def artifactId = "sample-webapp"
+                def version = "1.2-SNAPSHOT"
 
-                        def metadataUrl = "${baseUrl}/${groupPath}/${version}/maven-metadata.xml"
+                def metadataUrl = "${baseUrl}/${groupPath}/${version}/maven-metadata.xml"
 
-                        sh """
-                            set -e
+                sh '''
+                    set -e
 
-                            echo "Fetching Maven metadata..."
-                            curl -u $ART_USER:$ART_PASS -s ${metadataUrl} -o metadata.xml
+                    echo "Fetching Maven metadata from Artifactory..."
+                    curl -u "$ART_USER:$ART_PASS" -s "$metadataUrl" -o metadata.xml
 
-                            echo "Parsing metadata to find latest SNAPSHOT WAR..."
-                            TIMESTAMP=\$(grep -oPm1 '(?<=<timestamp>)[^<]+' metadata.xml)
-                            BUILDNUM=\$(grep -oPm1 '(?<=<buildNumber>)[^<]+' metadata.xml)
+                    echo "Parsing metadata.xml for timestamp and build number..."
+                    TIMESTAMP=$(grep -oPm1 '(?<=<timestamp>)[^<]+' metadata.xml)
+                    BUILDNUM=$(grep -oPm1 '(?<=<buildNumber>)[^<]+' metadata.xml)
 
-                            echo "Timestamp: \$TIMESTAMP"
-                            echo "Build number: \$BUILDNUM"
+                    echo "TIMESTAMP: $TIMESTAMP"
+                    echo "BUILD NUMBER: $BUILDNUM"
 
-                            WAR_NAME=${artifactId}-1.2-\${TIMESTAMP}-\${BUILDNUM}.war
-                            ARTIFACT_URL=${baseUrl}/${groupPath}/${version}/\$WAR_NAME
+                    WAR_NAME="${artifactId}-1.2-${TIMESTAMP}-${BUILDNUM}.war"
+                    ARTIFACT_URL="${baseUrl}/${groupPath}/${version}/${WAR_NAME}"
 
-                            echo "Downloading WAR from: \$ARTIFACT_URL"
-                            curl -u $ART_USER:$ART_PASS -o /tmp/\$WAR_NAME \$ARTIFACT_URL
+                    echo "WAR to download: $WAR_NAME"
+                    echo "Downloading from: $ARTIFACT_URL"
 
-                            echo "Stopping Tomcat..."
-                            sudo /usr/tomcat/tomcat10/bin/shutdown.sh || echo 'Tomcat may already be stopped'
+                    curl -u "$ART_USER:$ART_PASS" -o "/tmp/$WAR_NAME" "$ARTIFACT_URL"
 
-                            echo "Cleaning old WAR..."
-                            sudo rm -f /usr/tomcat/tomcat10/webapps/sample-webapp.war
+                    echo "Stopping Tomcat..."
+                    sudo /usr/tomcat/tomcat10/bin/shutdown.sh || echo 'Tomcat may already be stopped'
 
-                            echo "Copying new WAR to Tomcat webapps..."
-                            sudo cp /tmp/\$WAR_NAME /usr/tomcat/tomcat10/webapps/sample-webapp.war
+                    echo "Cleaning old WAR from Tomcat webapps..."
+                    sudo rm -f /usr/tomcat/tomcat10/webapps/sample-webapp.war
 
-                            echo "Starting Tomcat..."
-                            sudo /usr/tomcat/tomcat10/bin/startup.sh || echo 'Tomcat startup might need manual check'
+                    echo "Deploying new WAR to Tomcat..."
+                    sudo cp "/tmp/$WAR_NAME" /usr/tomcat/tomcat10/webapps/sample-webapp.war
 
-                            echo "Deployment completed successfully."
-                        """
-                    }
-                }
+                    echo "Starting Tomcat..."
+                    sudo /usr/tomcat/tomcat10/bin/startup.sh || echo 'Tomcat startup might need manual check'
+
+                    echo "Deployment completed successfully: $WAR_NAME"
+                '''
             }
         }
+    }
+}
+
     }
 } 
