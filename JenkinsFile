@@ -40,7 +40,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'jfrog_pass', usernameVariable: 'ART_USER', passwordVariable: 'ART_PASS')]) {
                     script {
-                        def baseUrl = "http://54.210.232.105:8081/artifactory/libs-snapshot-local"
+                        def baseUrl = "http://3.86.84.96:8081/artifactory/libs-snapshot-local"
                         def groupPath = "com/example/sample-webapp"
                         def artifactId = "sample-webapp"
                         def version = "1.2-SNAPSHOT"
